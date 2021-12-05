@@ -2,6 +2,11 @@ import numpy as np
 
 
 def find_vents(entries: np.ndarray) -> int:
+    """Find the number of vents
+
+    :param entries: The entries of the map
+    :return: The number of vents
+    """
     diagram = np.zeros(shape=(np.max(entries) + 1, np.max(entries) + 1))
     for entry in entries:
         if entry[0, 0] == entry[1, 0]:
@@ -14,37 +19,23 @@ def find_vents(entries: np.ndarray) -> int:
                 diagram[entry[1, 1], entry[1, 0] : entry[0, 0] + 1] += 1
             else:
                 diagram[entry[1, 1], entry[0, 0] : entry[1, 0] + 1] += 1
-        elif entry[0, 0] == entry[1, 1] and entry[0, 1] == entry[1, 0]:
-            if entry[0, 0] > entry[1, 0]:
-                for i in range(entry[0, 0], entry[1, 0] - 1, -1):
-                    diagram[entry[1, 1] - i, i] += 1
-            else:
-                for i in range(entry[1, 0], entry[0, 0] - 1, -1):
-                    diagram[entry[1, 1] - i, i] += 1
-        elif entry[1, 0] == entry[1, 1] and entry[0, 0] == entry[0, 1]:
-            if entry[0, 0] > entry[1, 0]:
-                for i in range(entry[1, 0], entry[0, 0] + 1):
-                    diagram[i, i] += 1
-            else:
-                for i in range(entry[0, 0], entry[1, 0] + 1):
-                    diagram[i, i] += 1
         else:
             if entry[0, 0] > entry[1, 0]:
                 lower = (entry[1, 0], entry[1, 1])
                 upper = (entry[0, 0], entry[0, 1])
-            elif entry[0, 0] < entry[1, 0]:
+            else:
                 lower = (entry[0, 0], entry[0, 1])
                 upper = (entry[1, 0], entry[1, 1])
-            if lower[1] < upper[1]:
-                for i in range(lower[0], upper[0] + 1):
-                    diagram[lower[0] + i, lower[1] + i] += 1
-            else:
-                offset = abs(upper[1] - lower[1])
-                for i in range(offset + 1):
-                    diagram[upper[0] - i, upper[1] + i] += 1
+            offset = (upper[0] - lower[0], upper[1] - lower[1])
+            if (offset[0] > 0) and offset[1] < 0:
+                for i in range(offset[0] + 1):
+                    diagram[upper[1] + i, upper[0] - i] += 1
+            elif (offset[0] > 0) and offset[1] > 0:
+                for i in range(offset[0] + 1):
+                    diagram[lower[1] + i, lower[0] + i] += 1
 
     mask = np.where(diagram > 1)
-    return diagram.astype(int)  #  [mask].shape[0]
+    return diagram[mask].shape[0]
 
 
 def main() -> int:
